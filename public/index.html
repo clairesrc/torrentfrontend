@@ -1,0 +1,51 @@
+<html>
+<style type="text/css">
+    #search {
+
+    }
+
+    #results {
+
+    }
+</style>
+<form id="search">
+    <input type="text">
+    <input type="submit" name="submit" value="search">
+    <div id="results">
+        <ul></ul>
+    </div>
+</form>
+<script>
+    const torrentDetailUrlPrefix = "https://1337x.to/torrent/"
+    document.querySelector("#search").addEventListener("submit", (e) => {
+        e.preventDefault()
+        fetch(`/search/${document.querySelector("#search input").value}`)
+            .then(response => response.json())
+            .then(searchResults => {
+                document.querySelector("#results ul").innerHTML = buildResultsHtml(searchResults)
+                bindResultEvents()
+            });
+    })
+    function buildResultsHtml(results) {
+        return results.reduce((html, result) => {
+            return html + `<li><a href="${result.link}">${result.title}</a></li>`
+        }, '')
+    }
+    function bindResultEvents() {
+        console.log(document.querySelectorAll("#results a"))
+        Array.from(document.querySelectorAll("#results a")).map((resultElement) => {
+            resultElement.addEventListener("click", (e) => {
+                e.preventDefault()
+                const resultDetailParam = resultElement.href.replace(torrentDetailPrefix, "")
+                fetch(`/download/${resultDetailParam}`)
+                    .then(response => response.json())
+                    .then(downloadResponse => {
+                        if (downloadResponse.success == true) {
+                            alert(`Now downloading ${resultElement.innerHTML}`)
+                        }
+                    })
+            })
+        })
+    }
+</script>
+</html>
